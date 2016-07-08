@@ -31,6 +31,11 @@ public class BaseRefreshRecyclerView extends RecyclerView {
     private int currentDist = 0;
     private ValueAnimator animator_hide_header;
     private int firstCompletelyVisibleItemPosition;
+    private OnRefreshAndLoadMoreListener onRefreshAndLoadMoreListener;
+
+    public void setOnRefreshAndLoadMoreListener(OnRefreshAndLoadMoreListener onRefreshAndLoadMoreListener) {
+        this.onRefreshAndLoadMoreListener = onRefreshAndLoadMoreListener;
+    }
 
 
     public void setRefreshAble(boolean refreshAble) {
@@ -153,20 +158,7 @@ public class BaseRefreshRecyclerView extends RecyclerView {
     }
 
 
-    private void onLoadMore() {
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.setFooterVisible(false);
-                List data = mAdapter.getData();
-                for (int i = 0; i < 50; i++) {
-                    data.add(i*1000);
-                }
-                mAdapter.setData(data);
-                mAdapter.notifyDataSetChanged();
-            }
-        },3000);
-    }
+
 
     private void initAnimaionRelasetoRefresh() {
         ValueAnimator animator_relase_torefresh = ValueAnimator.ofInt(currentDist, 0);
@@ -204,17 +196,23 @@ public class BaseRefreshRecyclerView extends RecyclerView {
     }
 
     private void onRefresh() {
-        Toast.makeText(getContext(), "Refreshing", Toast.LENGTH_SHORT).show();
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                changeWightState();
-                initAnimationRefreshOver();
-                currentState = STATE_PULL_TO_REFRESH;
-                mAdapter.setHeaderState(0);
-            }
-        }, 3000);
-
+        if (onRefreshAndLoadMoreListener != null) {
+            onRefreshAndLoadMoreListener.onRefresh();
+        }
+    }
+    public void completeRefresh(){
+        changeWightState();
+        initAnimationRefreshOver();
+        currentState = STATE_PULL_TO_REFRESH;
+        mAdapter.setHeaderState(0);
+    }
+    public void completeLoadMore(){
+        mAdapter.setFooterVisible(false);
+    }
+    private void onLoadMore() {
+        if (onRefreshAndLoadMoreListener != null) {
+            onRefreshAndLoadMoreListener.onLoadMore();
+        }
     }
 
     private void changeWightState() {
@@ -229,6 +227,12 @@ public class BaseRefreshRecyclerView extends RecyclerView {
                 mAdapter.setHeaderState(2);
                 break;
         }
+    }
+
+    public interface OnRefreshAndLoadMoreListener {
+        void onRefresh();
+
+        void onLoadMore();
     }
 
 }
