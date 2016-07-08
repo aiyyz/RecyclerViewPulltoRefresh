@@ -19,6 +19,11 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
     private final int VIEW_TYPE_REFRESH_HEADER = 0;
     private final int VIEW_TYPE_ITEM = 1;
     private final int VIEW_TYPE_REFRESH_FOOTER = 2;
+
+    public List getData() {
+        return data;
+    }
+
     private List data;
     private int headerViewMeasuredHeight;
     private View headerView;
