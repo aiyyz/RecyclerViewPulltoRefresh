@@ -2,12 +2,15 @@ package com.super_zuo.study;
 
 import android.graphics.drawable.AnimationDrawable;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.List;
@@ -30,10 +33,6 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
     public ImageView pb;
     public TextView tv_loading;
 
-    public void setLoadMore(boolean loadMore) {
-        this.loadMore = loadMore;
-    }
-
     private boolean loadMore = false;
 
     public void setData(List data) {
@@ -45,7 +44,8 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
         RecyclerView.ViewHolder viewHolder = null;
         switch (viewType) {
             case VIEW_TYPE_REFRESH_HEADER:
-                View headerView = View.inflate(parent.getContext(), R.layout.view_refresh_header, null);
+                View headerView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.view_refresh_header, parent, true);
                 this.headerView = headerView;
                 viewHolder = new RefreshHeaderViewHolder(headerView);
                 break;
@@ -53,7 +53,8 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
                 viewHolder = onCreateItemViewHolder(parent);
                 break;
             case VIEW_TYPE_REFRESH_FOOTER:
-                View footerView = View.inflate(parent.getContext(), R.layout.view_refresh_header, null);
+                View footerView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.view_refresh_header, parent, false);
                 viewHolder = new RefreshFooterViewHolder(footerView);
                 break;
         }
@@ -85,7 +86,6 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
     }
 
     private void prepareHeaderView(RecyclerView.ViewHolder holder) {
-
     }
 
 
@@ -126,7 +126,8 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
                 }
             });
         }
-        if (layoutManager!=null&& layoutManager instanceof LinearLayoutManager){
+        if (layoutManager != null && layoutManager instanceof LinearLayoutManager) {
+
         }
     }
 
