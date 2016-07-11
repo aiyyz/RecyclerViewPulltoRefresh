@@ -12,7 +12,7 @@ import android.widget.TextView;
 public class TestRecyclerViewAdapter extends BaseRefreshRecyclerViewAdapater {
     @Override
     protected RecyclerView.ViewHolder onCreateItemViewHolder(ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_test, null);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_test, parent,false);
         return new TestViewHolder(view);
     }
 

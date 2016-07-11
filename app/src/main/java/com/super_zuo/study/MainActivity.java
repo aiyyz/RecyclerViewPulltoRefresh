@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         final BaseRefreshRecyclerView rcv_test = (BaseRefreshRecyclerView) findViewById(R.id.rcv_test);
         final TestRecyclerViewAdapter madapter = new TestRecyclerViewAdapter();
-        rcv_test.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL));
+        rcv_test.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
         ArrayList list = new ArrayList();
         for (int i = 0; i < 250; i++) {
             list.add(i);
