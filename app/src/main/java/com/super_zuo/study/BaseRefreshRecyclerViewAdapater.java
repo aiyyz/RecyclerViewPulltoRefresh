@@ -44,8 +44,8 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
         RecyclerView.ViewHolder viewHolder = null;
         switch (viewType) {
             case VIEW_TYPE_REFRESH_HEADER:
-                View headerView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.view_refresh_header, parent, true);
+                View headerView =View
+                        .inflate(parent.getContext(),R.layout.view_refresh_header, null);
                 this.headerView = headerView;
                 viewHolder = new RefreshHeaderViewHolder(headerView);
                 break;
