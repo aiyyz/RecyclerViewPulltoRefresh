@@ -8,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -83,13 +84,12 @@ public class BaseRefreshRecyclerView extends RecyclerView {
                     break;
                 }
                 float tmpY = e.getY();
-
                 if (currentState == STATE_PULL_TO_REFRESH) {
                     if ((tmpY - startY) / ranY <= this.headerRefreshHeight) {
                         currentDist = (int) ((tmpY - startY) / ranY);
                         mAdapter.setHeaderPadding((int) ((tmpY - startY) / ranY - this.headerRefreshHeight));
                         initAnimationHideHeader();
-                    } else if (firstCompletelyVisibleItemPosition <= 1) {
+                    } else if (firstCompletelyVisibleItemPosition >= 0 && firstCompletelyVisibleItemPosition <= 1) {
                         currentState = STATE_RELASE_TO_REFRESH;
                         changeWightState();
                     }
@@ -148,16 +148,14 @@ public class BaseRefreshRecyclerView extends RecyclerView {
             int[] lastVisibleItemPositions = ((StaggeredGridLayoutManager) layoutManager).findLastVisibleItemPositions(last);
             int[] firstCompletelyVisibleItemPositions = ((StaggeredGridLayoutManager) layoutManager).findFirstCompletelyVisibleItemPositions(first);
             firstCompletelyVisibleItemPosition = firstCompletelyVisibleItemPositions[0];
-            lastVisibleItemPosition = lastVisibleItemPositions[lastVisibleItemPositions.length - 1];
+            lastVisibleItemPosition = lastVisibleItemPositions[0] > lastVisibleItemPositions[1] ? lastVisibleItemPositions[0] : lastVisibleItemPositions[1];
         }
         if (lastVisibleItemPosition == mAdapter.getItemCount() - 1) {
             mAdapter.setFooterVisible(true);
-            layoutManager.scrollToPosition(mAdapter.getItemCount() - 1);
+            layoutManager.scrollToPosition(mAdapter.getItemCount());
             onLoadMore();
         }
     }
-
-
 
 
     private void initAnimaionRelasetoRefresh() {
@@ -200,15 +198,18 @@ public class BaseRefreshRecyclerView extends RecyclerView {
             onRefreshAndLoadMoreListener.onRefresh();
         }
     }
-    public void completeRefresh(){
+
+    public void completeRefresh() {
         changeWightState();
         initAnimationRefreshOver();
         currentState = STATE_PULL_TO_REFRESH;
         mAdapter.setHeaderState(0);
     }
-    public void completeLoadMore(){
+
+    public void completeLoadMore() {
         mAdapter.setFooterVisible(false);
     }
+
     private void onLoadMore() {
         if (onRefreshAndLoadMoreListener != null) {
             onRefreshAndLoadMoreListener.onLoadMore();

@@ -4,6 +4,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /**
@@ -12,24 +14,32 @@ import android.widget.TextView;
 public class TestRecyclerViewAdapter extends BaseRefreshRecyclerViewAdapater {
     @Override
     protected RecyclerView.ViewHolder onCreateItemViewHolder(ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_test, parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_test, parent, false);
         return new TestViewHolder(view);
     }
 
     @Override
     protected void onBindItemViewHolder(RecyclerView.ViewHolder holder, int i) {
         TestViewHolder testViewHolder = (TestViewHolder) holder;
-        testViewHolder.tv.setText("" + i);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) testViewHolder.iv.getLayoutParams();
+        int height = 0;
+        if (i*10>200){
+            height = 500-i;
+        }else{
+            height = 300+i*5;
+        }
+        params.height = height;
+        testViewHolder.iv.setLayoutParams(params);
     }
 
 
     static class TestViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tv;
+        ImageView iv;
 
         public TestViewHolder(View itemView) {
             super(itemView);
-            tv = (TextView) itemView.findViewById(R.id.tv);
+            iv = (ImageView) itemView.findViewById(R.id.iv);
         }
     }
 }

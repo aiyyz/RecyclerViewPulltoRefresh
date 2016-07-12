@@ -5,10 +5,11 @@
     android:gravity="center"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tv"
-        android:layout_width="wrap_content"
-        android:text="da"
-        android:layout_height="wrap_content"
-        android:gravity="center" />
+    <ImageView
+        android:id="@+id/iv"
+        android:layout_width="300dp"
+        android:layout_height="400dp"
+        android:gravity="center"
+        android:scaleType="centerCrop"
+        android:src="@drawable/meizi" />
 </LinearLayout>

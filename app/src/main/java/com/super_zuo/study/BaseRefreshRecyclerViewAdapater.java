@@ -44,8 +44,8 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
         RecyclerView.ViewHolder viewHolder = null;
         switch (viewType) {
             case VIEW_TYPE_REFRESH_HEADER:
-                View headerView =View
-                        .inflate(parent.getContext(),R.layout.view_refresh_header, null);
+                View headerView = View
+                        .inflate(parent.getContext(), R.layout.view_refresh_header, null);
                 this.headerView = headerView;
                 viewHolder = new RefreshHeaderViewHolder(headerView);
                 break;
@@ -139,12 +139,15 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
         if (lp == null) {
             return;
         }
-        if (lp instanceof StaggeredGridLayoutManager.LayoutParams) {
-            int position = holder.getLayoutPosition();
-            StaggeredGridLayoutManager.LayoutParams p = (StaggeredGridLayoutManager.LayoutParams) lp;
-            if (position == 0 || position == getItemCount() - 1) {
-                p.setFullSpan(true);
+        if (holder instanceof RefreshHeaderViewHolder || holder instanceof RefreshFooterViewHolder) {
 
+            if (lp instanceof StaggeredGridLayoutManager.LayoutParams) {
+                int position = holder.getLayoutPosition();
+                StaggeredGridLayoutManager.LayoutParams p = (StaggeredGridLayoutManager.LayoutParams) lp;
+                p.setFullSpan(true);
+                if (position == 0 || position == getItemCount() - 1) {
+
+                }
             }
         }
     }
