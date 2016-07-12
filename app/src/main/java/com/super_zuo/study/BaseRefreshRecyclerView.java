@@ -148,7 +148,9 @@ public class BaseRefreshRecyclerView extends RecyclerView {
             int[] lastVisibleItemPositions = ((StaggeredGridLayoutManager) layoutManager).findLastVisibleItemPositions(last);
             int[] firstCompletelyVisibleItemPositions = ((StaggeredGridLayoutManager) layoutManager).findFirstCompletelyVisibleItemPositions(first);
             firstCompletelyVisibleItemPosition = firstCompletelyVisibleItemPositions[0];
-            lastVisibleItemPosition = lastVisibleItemPositions[0] > lastVisibleItemPositions[1] ? lastVisibleItemPositions[0] : lastVisibleItemPositions[1];
+            for (int i : lastVisibleItemPositions) {
+                lastVisibleItemPosition = i>lastVisibleItemPosition?i:lastVisibleItemPosition;
+            }
         }
         if (lastVisibleItemPosition == mAdapter.getItemCount() - 1) {
             mAdapter.setFooterVisible(true);
