@@ -8,12 +8,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
-
-import java.util.List;
 
 /**
  * Created by super-zuo on 16-7-1.
@@ -21,7 +17,7 @@ import java.util.List;
 public class BaseRefreshRecyclerView extends RecyclerView {
 
     private static final String TAG = "BaseRefreshRecyclerView";
-    private BaseRefreshRecyclerViewAdapater mAdapter;
+    private BaseRefreshRecyclerViewAdapter mAdapter;
     private int headerRefreshHeight;
     private float startY;
     private final int STATE_PULL_TO_REFRESH = 0;
@@ -64,11 +60,11 @@ public class BaseRefreshRecyclerView extends RecyclerView {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         Adapter adapter = getAdapter();
-        if (!(adapter instanceof BaseRefreshRecyclerViewAdapater)) {
+        if (!(adapter instanceof BaseRefreshRecyclerViewAdapter)) {
             throw new IllegalArgumentException("the adapter must extents BaseRefreshRecyclerViewAdapter");
         }
-        mAdapter = (BaseRefreshRecyclerViewAdapater) adapter;
-        mAdapter.setFooterClickListener(new BaseRefreshRecyclerViewAdapater.FooterClickListener() {
+        mAdapter = (BaseRefreshRecyclerViewAdapter) adapter;
+        mAdapter.setFooterClickListener(new BaseRefreshRecyclerViewAdapter.FooterClickListener() {
             @Override
             public void onFooterClick() {
                 onLoadMore();

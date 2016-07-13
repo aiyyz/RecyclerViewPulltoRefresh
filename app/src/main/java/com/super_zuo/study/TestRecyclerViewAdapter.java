@@ -6,12 +6,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 /**
  * Created by super-zuo on 16-7-5.
  */
-public class TestRecyclerViewAdapter extends BaseRefreshRecyclerViewAdapater {
+public class TestRecyclerViewAdapter extends BaseRefreshRecyclerViewAdapter {
     @Override
     protected RecyclerView.ViewHolder onCreateItemViewHolder(ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_test, parent, false);
