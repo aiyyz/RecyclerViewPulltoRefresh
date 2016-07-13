@@ -2,7 +2,6 @@ package com.super_zuo.study;
 
 import android.graphics.drawable.AnimationDrawable;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -10,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.List;
@@ -22,6 +20,8 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
     private final int VIEW_TYPE_REFRESH_HEADER = 0;
     private final int VIEW_TYPE_ITEM = 1;
     private final int VIEW_TYPE_REFRESH_FOOTER = 2;
+    private TextView tv_footer;
+    private boolean footerClickRefresh = false;
 
     public List getData() {
         return data;
@@ -54,7 +54,7 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
                 break;
             case VIEW_TYPE_REFRESH_FOOTER:
                 View footerView = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.view_refresh_header, parent, false);
+                        .inflate(R.layout.view_refresh_footer, parent, false);
                 viewHolder = new RefreshFooterViewHolder(footerView);
                 break;
         }
@@ -176,19 +176,27 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
         }
     }
 
+    public void setFooterRefreshFailState() {
+        tv_footer.setText("click to retry!");
+        footerClickRefresh = true;
+    }
+
     public void setHeaderState(int i) {
         switch (i) {
             case 0:
                 pb.clearAnimation();
                 ((AnimationDrawable) pb.getBackground()).stop();
+                tv_loading.setText("pull to refresh");
                 break;
             case 1:
                 pb.clearAnimation();
                 ((AnimationDrawable) pb.getBackground()).stop();
+                tv_loading.setText("release to refresh");
                 break;
             case 2:
                 pb.clearAnimation();
                 ((AnimationDrawable) pb.getBackground()).start();
+                tv_loading.setText("loading...");
                 break;
         }
     }
@@ -209,8 +217,26 @@ public abstract class BaseRefreshRecyclerViewAdapater extends RecyclerView.Adapt
     private class RefreshFooterViewHolder extends RecyclerView.ViewHolder {
         public RefreshFooterViewHolder(View footerView) {
             super(footerView);
-            ImageView pb = (ImageView) footerView.findViewById(R.id.pb);
-            TextView tv_loading = (TextView) footerView.findViewById(R.id.tv_loading);
+            tv_footer = (TextView) footerView.findViewById(R.id.tv_footer);
+            footerView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (footerClickRefresh && footerClickListener != null) {
+                        footerClickListener.onFooterClick();
+                    }
+                }
+            });
         }
     }
+
+    public interface FooterClickListener {
+        void onFooterClick();
+    }
+
+    public void setFooterClickListener(FooterClickListener footerClickListener) {
+        this.footerClickListener = footerClickListener;
+    }
+
+    private FooterClickListener footerClickListener;
+
 }

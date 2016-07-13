@@ -33,6 +33,7 @@ public class BaseRefreshRecyclerView extends RecyclerView {
     private ValueAnimator animator_hide_header;
     private int firstCompletelyVisibleItemPosition;
     private OnRefreshAndLoadMoreListener onRefreshAndLoadMoreListener;
+    boolean hasInit = false;
 
     public void setOnRefreshAndLoadMoreListener(OnRefreshAndLoadMoreListener onRefreshAndLoadMoreListener) {
         this.onRefreshAndLoadMoreListener = onRefreshAndLoadMoreListener;
@@ -67,6 +68,12 @@ public class BaseRefreshRecyclerView extends RecyclerView {
             throw new IllegalArgumentException("the adapter must extents BaseRefreshRecyclerViewAdapter");
         }
         mAdapter = (BaseRefreshRecyclerViewAdapater) adapter;
+        mAdapter.setFooterClickListener(new BaseRefreshRecyclerViewAdapater.FooterClickListener() {
+            @Override
+            public void onFooterClick() {
+                onLoadMore();
+            }
+        });
     }
 
     @Override
@@ -143,13 +150,18 @@ public class BaseRefreshRecyclerView extends RecyclerView {
             lastVisibleItemPosition = ((GridLayoutManager) layoutManager).findLastVisibleItemPosition();
             firstCompletelyVisibleItemPosition = ((GridLayoutManager) layoutManager).findFirstCompletelyVisibleItemPosition();
         } else if (layoutManager instanceof StaggeredGridLayoutManager) {
-            int[] last = new int[((StaggeredGridLayoutManager) layoutManager).getSpanCount()];
-            int[] first = new int[3];
+            int[] last = null;
+            int[] first = null;
+            if (!hasInit) {
+                last = new int[((StaggeredGridLayoutManager) layoutManager).getSpanCount()];
+                first = new int[last.length];
+                hasInit = true;
+            }
             int[] lastVisibleItemPositions = ((StaggeredGridLayoutManager) layoutManager).findLastVisibleItemPositions(last);
             int[] firstCompletelyVisibleItemPositions = ((StaggeredGridLayoutManager) layoutManager).findFirstCompletelyVisibleItemPositions(first);
             firstCompletelyVisibleItemPosition = firstCompletelyVisibleItemPositions[0];
             for (int i : lastVisibleItemPositions) {
-                lastVisibleItemPosition = i>lastVisibleItemPosition?i:lastVisibleItemPosition;
+                lastVisibleItemPosition = i > lastVisibleItemPosition ? i : lastVisibleItemPosition;
             }
         }
         if (lastVisibleItemPosition == mAdapter.getItemCount() - 1) {
