@@ -1,6 +1,7 @@
 # RecyclerViewPulltoRefresh
 recyclerview 下拉刷新和加载更多，支持3种layoutmanager，支持添加ItemDecoration，一个简单的封装
-![效果图](http://upload-images.jianshu.io/upload_images/1334897-ae79aea8b2098830.gif?imageMogr2/auto-orient/strip)
+###详细说明：[简书](http://www.jianshu.com/p/dcd46b0e2cf8)
+![效果图](https://github.com/aiyyz/RecyclerViewPulltoRefresh/blob/master/app/src/main/res/drawable/1.gif)
 
 #####How to use
   你只需要修改少许部分就能实现一个属于自己的封装抽取，当然自己实现也是很容易的。
@@ -50,4 +51,4 @@ recyclerview 下拉刷新和加载更多，支持3种layoutmanager，支持添�
             }
         });
 ```
-查看详情：[简书](http://www.jianshu.com/p/dcd46b0e2cf8)
+
