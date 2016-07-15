@@ -200,9 +200,13 @@ public abstract class BaseRefreshRecyclerViewAdapter extends RecyclerView.Adapte
             super(headerView);
             pb = (ImageView) headerView.findViewById(R.id.pb);
             tv_loading = (TextView) headerView.findViewById(R.id.tv_loading);
-            headerView.measure(0, 0);
-            headerViewMeasuredHeight = headerView.getMeasuredHeight();
-            setHeaderPadding();
+            headerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    headerViewMeasuredHeight = headerView.getMeasuredHeight();
+                    setHeaderPadding();
+                }
+            });
         }
     }
 

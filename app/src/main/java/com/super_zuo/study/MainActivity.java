@@ -19,11 +19,11 @@ public class MainActivity extends AppCompatActivity {
         final BaseRefreshRecyclerView rcv_test = (BaseRefreshRecyclerView) findViewById(R.id.rcv_test);
         final TestRecyclerViewAdapter madapter = new TestRecyclerViewAdapter();
         StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
-        rcv_test.setLayoutManager(new LinearLayoutManager(this));
-        rcv_test.addItemDecoration(new SimpleItemDecoration(20,2));
+        rcv_test.setLayoutManager(staggeredGridLayoutManager);
+        rcv_test.addItemDecoration(new SimpleItemDecoration(20,3));
         staggeredGridLayoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
         ArrayList list = new ArrayList();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 15; i++) {
             list.add(i);
         }
         madapter.setData(list);
