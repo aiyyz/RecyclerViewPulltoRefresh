@@ -107,7 +107,7 @@ public class BaseRefreshRecyclerView extends RecyclerView {
                 if (currentState == STATE_LOADING) {
                     break;
                 }
-                if (currentState == STATE_PULL_TO_REFRESH) {
+                if (currentState == STATE_PULL_TO_REFRESH && currentDist > 0) {
                     if (animator_hide_header == null) {
                         initAnimationHideHeader();
                     }
@@ -160,7 +160,7 @@ public class BaseRefreshRecyclerView extends RecyclerView {
                 lastVisibleItemPosition = i > lastVisibleItemPosition ? i : lastVisibleItemPosition;
             }
         }
-        if (lastVisibleItemPosition == mAdapter.getItemCount() - 1) {
+        if (l != 0 && lastVisibleItemPosition == mAdapter.getItemCount() - 1) {
             mAdapter.setFooterVisible(true);
             layoutManager.scrollToPosition(mAdapter.getItemCount());
             onLoadMore();
