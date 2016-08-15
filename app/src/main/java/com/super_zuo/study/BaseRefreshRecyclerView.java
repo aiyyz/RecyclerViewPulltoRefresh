@@ -134,8 +134,8 @@ public class BaseRefreshRecyclerView extends RecyclerView {
     }
 
     @Override
-    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
-        super.onScrollChanged(l, t, oldl, oldt);
+    public void onScrolled(int dx, int dy) {
+        super.onScrolled(dx, dy);
         LayoutManager layoutManager = getLayoutManager();
         int lastVisibleItemPosition = 0;
         if (layoutManager instanceof LinearLayoutManager) {
@@ -160,7 +160,7 @@ public class BaseRefreshRecyclerView extends RecyclerView {
                 lastVisibleItemPosition = i > lastVisibleItemPosition ? i : lastVisibleItemPosition;
             }
         }
-        if (l != 0 && lastVisibleItemPosition == mAdapter.getItemCount() - 1) {
+        if (dy != 0 && lastVisibleItemPosition == mAdapter.getItemCount() - 1) {
             mAdapter.setFooterVisible(true);
             layoutManager.scrollToPosition(mAdapter.getItemCount());
             onLoadMore();
