@@ -11,12 +11,15 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.List;
+
+
 /**
  * Created by super-zuo on 16-7-1.
  */
 public class BaseRefreshRecyclerView extends RecyclerView {
 
-    private static final String TAG = "BaseRefreshRecyclerView";
+    private static final int STATE_LOADING_MORE = 3;
     private BaseRefreshRecyclerViewAdapter mAdapter;
     private int headerRefreshHeight;
     private float startY;
@@ -24,12 +27,19 @@ public class BaseRefreshRecyclerView extends RecyclerView {
     private final int STATE_LOADING = 1;
     private final int STATE_RELASE_TO_REFRESH = 2;
     private int currentState = STATE_PULL_TO_REFRESH;
-    private float ranY = 1.5f;
     private int currentDist = 0;
     private ValueAnimator animator_hide_header;
     private int firstCompletelyVisibleItemPosition;
+    private int lastVisibleItemPosition = 0;
     private OnRefreshAndLoadMoreListener onRefreshAndLoadMoreListener;
     boolean hasInit = false;
+    private List data;
+
+    public void setNoMoreData(boolean noMoreData) {
+        this.noMoreData = noMoreData;
+    }
+
+    private boolean noMoreData;
 
     public void setOnRefreshAndLoadMoreListener(OnRefreshAndLoadMoreListener onRefreshAndLoadMoreListener) {
         this.onRefreshAndLoadMoreListener = onRefreshAndLoadMoreListener;
@@ -67,27 +77,38 @@ public class BaseRefreshRecyclerView extends RecyclerView {
         mAdapter.setFooterClickListener(new BaseRefreshRecyclerViewAdapter.FooterClickListener() {
             @Override
             public void onFooterClick() {
+                if (currentState == STATE_LOADING || currentState == STATE_LOADING_MORE || noMoreData) {
+                    return;
+                }
                 onLoadMore();
             }
         });
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent e) {
+    public boolean dispatchTouchEvent(MotionEvent e) {
         if (!refreshAble) {
-            return super.onTouchEvent(e);
+            return super.dispatchTouchEvent(e);
         }
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                currentDist = 0;
                 startY = e.getY();
                 headerRefreshHeight = mAdapter.getHeaderRefreshHeight();
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (currentState == STATE_LOADING) {
+                if (currentState == STATE_LOADING || currentState == STATE_LOADING_MORE) {
                     break;
                 }
                 float tmpY = e.getY();
+                float ranY = 1.5f;
                 if (currentState == STATE_PULL_TO_REFRESH) {
+                    if (tmpY < startY) {
+                        if (lastVisibleItemPosition == mAdapter.getItemCount() - 1 && getScrollState() == SCROLL_STATE_IDLE) {
+                            loadMore();
+                        }
+                        break;
+                    }
                     if ((tmpY - startY) / ranY <= this.headerRefreshHeight) {
                         currentDist = (int) ((tmpY - startY) / ranY);
                         mAdapter.setHeaderPadding((int) ((tmpY - startY) / ranY - this.headerRefreshHeight));
@@ -107,7 +128,10 @@ public class BaseRefreshRecyclerView extends RecyclerView {
                 if (currentState == STATE_LOADING) {
                     break;
                 }
-                if (currentState == STATE_PULL_TO_REFRESH && currentDist > 0) {
+                if (currentState == STATE_LOADING_MORE) {
+                    break;
+                }
+                if (currentState == STATE_PULL_TO_REFRESH && currentDist > 10) {
                     if (animator_hide_header == null) {
                         initAnimationHideHeader();
                     }
@@ -127,9 +151,10 @@ public class BaseRefreshRecyclerView extends RecyclerView {
                     }
 
                 }
+                currentDist = 0;
                 break;
         }
-        return super.onTouchEvent(e);
+        return super.dispatchTouchEvent(e);
 
     }
 
@@ -137,7 +162,6 @@ public class BaseRefreshRecyclerView extends RecyclerView {
     public void onScrolled(int dx, int dy) {
         super.onScrolled(dx, dy);
         LayoutManager layoutManager = getLayoutManager();
-        int lastVisibleItemPosition = 0;
         if (layoutManager instanceof LinearLayoutManager) {
             lastVisibleItemPosition = ((LinearLayoutManager) layoutManager).findLastVisibleItemPosition();
             firstCompletelyVisibleItemPosition = ((LinearLayoutManager) layoutManager).findFirstCompletelyVisibleItemPosition();
@@ -160,11 +184,17 @@ public class BaseRefreshRecyclerView extends RecyclerView {
                 lastVisibleItemPosition = i > lastVisibleItemPosition ? i : lastVisibleItemPosition;
             }
         }
-        if (dy != 0 && lastVisibleItemPosition == mAdapter.getItemCount() - 1) {
-            mAdapter.setFooterVisible(true);
-            layoutManager.scrollToPosition(mAdapter.getItemCount());
-            onLoadMore();
+
+        if (dy > 0 && lastVisibleItemPosition == mAdapter.getItemCount() - 1) {
+            loadMore();
         }
+    }
+
+    private void loadMore() {
+        if (currentState == STATE_LOADING || currentState == STATE_LOADING_MORE || noMoreData) {
+            return;
+        }
+        onLoadMore();
     }
 
 
@@ -181,6 +211,9 @@ public class BaseRefreshRecyclerView extends RecyclerView {
     }
 
     private void initAnimationRefreshOver() {
+        if (headerRefreshHeight == 0 || mAdapter.getHeaderPaddingTop() < 0) {
+            return;
+        }
         ValueAnimator animator_refresh_over = ValueAnimator.ofInt(0, -headerRefreshHeight);
         animator_refresh_over.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -204,25 +237,36 @@ public class BaseRefreshRecyclerView extends RecyclerView {
     }
 
     private void onRefresh() {
+        setNoMoreData(false);
         if (onRefreshAndLoadMoreListener != null) {
             onRefreshAndLoadMoreListener.onRefresh();
         }
     }
 
     public void completeRefresh() {
+        currentState = STATE_PULL_TO_REFRESH;
         changeWightState();
         initAnimationRefreshOver();
-        currentState = STATE_PULL_TO_REFRESH;
-        mAdapter.setHeaderState(0);
+        if (mAdapter.isFooterVisible()) {
+            mAdapter.setFooterVisible(false);
+        }
+//            mAdapter.setFooterState(0);
     }
 
     public void completeLoadMore() {
-        mAdapter.setFooterVisible(false);
+        if (mAdapter.isFooterVisible()) {
+            mAdapter.setFooterVisible(false);
+        }
+        currentState = STATE_PULL_TO_REFRESH;
     }
 
     private void onLoadMore() {
+
         if (onRefreshAndLoadMoreListener != null) {
+            currentState = STATE_LOADING_MORE;
             onRefreshAndLoadMoreListener.onLoadMore();
+            mAdapter.setFooterState(0);
+            mAdapter.setFooterVisible(true);
         }
     }
 
@@ -238,6 +282,20 @@ public class BaseRefreshRecyclerView extends RecyclerView {
                 mAdapter.setHeaderState(2);
                 break;
         }
+    }
+
+    public void noMoreData() {
+        mAdapter.setFooterState(2);
+        mAdapter.setFooterVisible(true);
+        setNoMoreData(true);
+    }
+
+    public void completeLoading() {
+        currentState = STATE_PULL_TO_REFRESH;
+    }
+
+    public List getData() {
+        return data;
     }
 
     public interface OnRefreshAndLoadMoreListener {

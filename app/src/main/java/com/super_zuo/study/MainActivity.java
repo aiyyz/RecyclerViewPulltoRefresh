@@ -5,6 +5,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -12,12 +14,15 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private BaseRefreshRecyclerView rcv_test;
+    private TestRecyclerViewAdapter madapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final BaseRefreshRecyclerView rcv_test = (BaseRefreshRecyclerView) findViewById(R.id.rcv_test);
-        final TestRecyclerViewAdapter madapter = new TestRecyclerViewAdapter();
+        rcv_test = (BaseRefreshRecyclerView) findViewById(R.id.rcv_test);
+        madapter = new TestRecyclerViewAdapter();
         StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
         rcv_test.setLayoutManager(staggeredGridLayoutManager);
         rcv_test.addItemDecoration(new SimpleItemDecoration(20,3));
@@ -57,5 +62,44 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    /**
+     * 模拟数据回调，刷新和加载更多共用一个回调。completeRefresh()与completeLoadMore()
+     * 需要分刷新和加载更多不同情况分别调用
+     */
+    public class dataCallBack {
+        private boolean isLoadMore;
+
+        void onSuccess(){
+            rcv_test.completeLoading();//必须调用，重置状态。
+            List data = new ArrayList();//解析后的数据。
+                if (data != null && data.size() > 0) {
+                    if (isLoadMore) {
+                        List products = rcv_test.getData();
+                        if (products != null) {
+                            int size = products.size();
+                            products.addAll(data);
+                            madapter.notifyItemInserted(size + 1);
+                        } else {
+                            madapter.setData(data);
+                            madapter.notifyDataSetChanged();
+                        }
+                        rcv_test.completeLoadMore();
+                    } else {
+                        madapter.setData(data);
+                        madapter.notifyDataSetChanged();
+                        rcv_test.completeRefresh();
+                    }
+
+
+                } else {
+                    rcv_test.noMoreData();
+                }
+        }
+        void onFailed(){
+            rcv_test.completeLoading();//必须调用
+            madapter.setFooterRefreshFailState();
+        }
     }
 }

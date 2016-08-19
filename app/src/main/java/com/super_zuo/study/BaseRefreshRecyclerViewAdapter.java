@@ -1,5 +1,7 @@
 package com.super_zuo.study;
 
+import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 
 import java.util.List;
 
@@ -21,12 +24,14 @@ public abstract class BaseRefreshRecyclerViewAdapter extends RecyclerView.Adapte
     private final int VIEW_TYPE_REFRESH_FOOTER = 2;
     private TextView tv_footer;
     private boolean footerClickRefresh = false;
+    private Context context;
+    private int failedFooterState;
 
     public List getData() {
         return data;
     }
 
-    private List data;
+    public List data;
     private int headerViewMeasuredHeight;
     private View headerView;
     public ImageView pb;
@@ -41,10 +46,11 @@ public abstract class BaseRefreshRecyclerViewAdapter extends RecyclerView.Adapte
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         RecyclerView.ViewHolder viewHolder = null;
+        context = parent.getContext();
         switch (viewType) {
             case VIEW_TYPE_REFRESH_HEADER:
                 View headerView = View
-                        .inflate(parent.getContext(), R.layout.view_refresh_header, null);
+                        .inflate(context, R.layout.view_refresh_header, null);
                 this.headerView = headerView;
                 viewHolder = new RefreshHeaderViewHolder(headerView);
                 break;
@@ -52,7 +58,7 @@ public abstract class BaseRefreshRecyclerViewAdapter extends RecyclerView.Adapte
                 viewHolder = onCreateItemViewHolder(parent);
                 break;
             case VIEW_TYPE_REFRESH_FOOTER:
-                View footerView = LayoutInflater.from(parent.getContext())
+                View footerView = LayoutInflater.from(context)
                         .inflate(R.layout.view_refresh_footer, parent, false);
                 viewHolder = new RefreshFooterViewHolder(footerView);
                 break;
@@ -125,6 +131,10 @@ public abstract class BaseRefreshRecyclerViewAdapter extends RecyclerView.Adapte
                 }
             });
         }
+        if (failedFooterState != 0) {
+            setFooterState(failedFooterState);
+        }
+
     }
 
     @Override
@@ -140,6 +150,8 @@ public abstract class BaseRefreshRecyclerViewAdapter extends RecyclerView.Adapte
             if (lp instanceof StaggeredGridLayoutManager.LayoutParams) {
                 StaggeredGridLayoutManager.LayoutParams p = (StaggeredGridLayoutManager.LayoutParams) lp;
                 p.setFullSpan(true);
+            }
+            if (holder instanceof RefreshFooterViewHolder) {
             }
         }
     }
@@ -158,18 +170,25 @@ public abstract class BaseRefreshRecyclerViewAdapter extends RecyclerView.Adapte
         }
     }
 
-    public void setFooterVisible(boolean b) {
+    public synchronized void setFooterVisible(boolean b) {
         if (b) {
             loadMore = true;
             notifyItemInserted(getItemCount());
         } else {
             loadMore = false;
-            notifyItemRemoved(getItemCount());
+            notifyDataSetChanged();
         }
     }
-
+    public boolean isFooterVisible(){
+        if (data != null) {
+            return getItemCount() == data.size() + 2;
+        }
+        return false;
+    }
     public void setFooterRefreshFailState() {
-        tv_footer.setText("click to retry!");
+        if (tv_footer != null) {
+            tv_footer.setText(context.getResources().getString(R.string.click_retry));
+        }
         footerClickRefresh = true;
     }
 
@@ -178,19 +197,51 @@ public abstract class BaseRefreshRecyclerViewAdapter extends RecyclerView.Adapte
             case 0:
                 pb.clearAnimation();
                 ((AnimationDrawable) pb.getBackground()).stop();
-                tv_loading.setText("pull to refresh");
+                tv_loading.setText(context.getResources().getString(R.string.xlistview_header_hint_normal));
+
                 break;
             case 1:
                 pb.clearAnimation();
                 ((AnimationDrawable) pb.getBackground()).stop();
-                tv_loading.setText("release to refresh");
+                tv_loading.setText(context.getResources().getString(R.string.xlistview_header_hint_ready));
                 break;
             case 2:
                 pb.clearAnimation();
                 ((AnimationDrawable) pb.getBackground()).start();
-                tv_loading.setText("loading...");
+                tv_loading.setText(context.getResources().getString(R.string.xlistview_header_hint_loading));
                 break;
         }
+    }
+
+    /**
+     * if footer has been GC or hadn't been inflater, this method will no use,because tv_footer is null,so I set the footer text in
+     * {@link #onAttachedToRecyclerView(RecyclerView)}
+     *
+     * @param i 0:loading 1:load fail 2:no more data
+     */
+    public void setFooterState(int i) {
+        if (tv_footer == null) {
+            failedFooterState = i;
+            return;
+        }
+        switch (i) {
+            case 0:// loading
+                tv_footer.setText(context.getResources().getString(R.string.xlistview_header_hint_loading));
+                break;
+            case 1://load fail
+                setFooterRefreshFailState();
+                break;
+            case 2://no more data
+                tv_footer.setText(context.getResources().getString(R.string.xlistview_header_hint_have_bottom_line));
+                break;
+            default:
+                tv_footer.setText(context.getResources().getString(R.string.xlistview_header_hint_loading));
+                break;
+        }
+    }
+
+    public int getHeaderPaddingTop() {
+        return headerView.getPaddingTop();
     }
 
 
@@ -234,5 +285,6 @@ public abstract class BaseRefreshRecyclerViewAdapter extends RecyclerView.Adapte
     }
 
     private FooterClickListener footerClickListener;
+
 
 }
